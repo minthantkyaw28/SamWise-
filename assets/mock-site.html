@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Apply for Pension Credit — GOV.UK</title>
+<!--
+  MOCK SITE for the "Samwise" hackathon demo.
+  This is NOT the real gov.uk. It imitates the GOV.UK Design System aesthetic
+  so the agent has a convincing, predictable target to automate.
+
+  AUTOMATION CONTRACT (read this, browserActions.ts depends on it):
+  - Every interactive element has a STABLE id. Never rename without updating the agent.
+  - Steps are sections with ids: step-eligibility, step-personal, step-income,
+    step-housing, step-bank, step-contact, step-review, step-confirmation.
+  - Use window.SAMWISE.* helpers (defined at the bottom) OR drive the DOM directly.
+  - The page posts messages to React Native via window.ReactNativeWebView.postMessage
+    when running inside the WebView (so the agent can read state back).
+-->
+<style>
+  /* ---- GOV.UK-inspired tokens ---- */
+  :root{
+    --black:#0b0c0c;
+    --white:#ffffff;
+    --green:#00703c;
+    --green-hover:#005a30;
+    --focus-yellow:#ffdd00;
+    --link:#1d70b8;
+    --link-hover:#003078;
+    --red:#d4351c;
+    --grey-bg:#f3f2f1;
+    --mid-grey:#b1b4b6;
+    --secondary:#505a5f;
+    --font:"GDS Transport",Arial,Helvetica,sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html{font-size:100%;}
+  body{
+    margin:0;font-family:var(--font);color:var(--black);
+    background:var(--white);line-height:1.25;-webkit-text-size-adjust:100%;
+  }
+
+  /* ---- Header (the black HMG bar) ---- */
+  .govuk-header{
+    background:var(--black);color:var(--white);
+    border-bottom:10px solid #1d70b8;
+  }
+  .govuk-header__container{
+    max-width:960px;margin:0 auto;padding:10px 15px;
+    display:flex;align-items:center;gap:10px;
+  }
+  .govuk-header__crown{display:flex;align-items:center;gap:8px;}
+  .govuk-header__logotype{
+    font-weight:700;font-size:1.875rem;letter-spacing:.02em;color:var(--white);
+    text-decoration:none;display:inline-flex;align-items:center;gap:6px;
+  }
+  .crown-svg{height:30px;width:auto;fill:var(--white);}
+
+  /* ---- Phase banner ---- */
+  .govuk-phase-banner{
+    max-width:960px;margin:0 auto;padding:10px 15px;
+    border-bottom:1px solid var(--mid-grey);font-size:1rem;
+  }
+  .govuk-tag{
+    background:#1d70b8;color:#fff;font-weight:700;text-transform:uppercase;
+    font-size:.75rem;letter-spacing:.05em;padding:4px 8px;border-radius:0;margin-right:8px;
+  }
+
+  /* ---- Layout ---- */
+  .govuk-width-container{max-width:960px;margin:0 auto;padding:0 15px;}
+  main{padding:30px 0 60px;}
+  .two-thirds{max-width:640px;}
+
+  h1{font-size:2.25rem;line-height:1.1;font-weight:700;margin:0 0 30px;}
+  h2{font-size:1.5rem;font-weight:700;margin:40px 0 20px;}
+  p{font-size:1.1875rem;margin:0 0 20px;}
+  .lede{font-size:1.375rem;}
+  a{color:var(--link);}
+  a:hover{color:var(--link-hover);}
+  a:focus,button:focus,input:focus,select:focus{
+    outline:3px solid transparent;color:var(--black);
+    background-color:var(--focus-yellow);
+    box-shadow:0 -2px var(--focus-yellow),0 4px var(--black);
+    text-decoration:none;
+  }
+
+  /* ---- Inset / callout ---- */
+  .govuk-inset-text{
+    border-left:10px solid var(--mid-grey);padding:15px;margin:20px 0;
+    font-size:1.1875rem;
+  }
+  .highlight{
+    background:#fff2cc;outline:3px solid var(--focus-yellow);
+    transition:background .2s;
+  }
+
+  /* ---- Form ---- */
+  .govuk-form-group{margin-bottom:30px;}
+  label,legend{display:block;font-size:1.1875rem;font-weight:700;margin-bottom:5px;}
+  .hint{color:var(--secondary);font-weight:400;font-size:1.0625rem;margin-bottom:10px;}
+  input[type=text],input[type=email],input[type=tel],input[type=number],input[type=date],select{
+    font-family:var(--font);font-size:1.1875rem;width:100%;max-width:480px;
+    padding:8px;border:2px solid var(--black);border-radius:0;background:#fff;
+  }
+  input.width-10{max-width:180px;}
+  input.width-20{max-width:280px;}
+
+  fieldset{border:0;padding:0;margin:0;}
+  .govuk-radios__item{display:flex;align-items:center;gap:10px;margin-bottom:12px;font-size:1.1875rem;}
+  .govuk-radios__item input{width:34px;height:34px;}
+
+  /* ---- Buttons ---- */
+  .govuk-button{
+    font-family:var(--font);font-size:1.1875rem;font-weight:400;
+    background:var(--green);color:#fff;border:0;border-radius:0;
+    box-shadow:0 2px 0 var(--green-hover);padding:10px 16px;cursor:pointer;
+    -webkit-appearance:none;margin:0 0 22px;
+  }
+  .govuk-button:hover{background:var(--green-hover);}
+  .govuk-button--start{font-size:1.5rem;font-weight:700;display:inline-flex;align-items:center;gap:10px;}
+  .govuk-button--secondary{background:var(--grey-bg);color:var(--black);box-shadow:0 2px 0 #929191;}
+
+  /* ---- Progress / steps ---- */
+  .step-indicator{font-size:1rem;color:var(--secondary);margin-bottom:8px;text-transform:uppercase;letter-spacing:.04em;}
+  .step{display:none;}
+  .step.active{display:block;}
+
+  /* ---- Review summary ---- */
+  .summary-list{border-collapse:collapse;width:100%;max-width:640px;}
+  .summary-list dt,.summary-list dd{font-size:1.1875rem;padding:12px 0;border-bottom:1px solid var(--mid-grey);}
+  dl.summary-list{margin:0;}
+  .summary-row{display:flex;justify-content:space-between;gap:20px;border-bottom:1px solid var(--mid-grey);padding:12px 0;}
+  .summary-row dt{font-weight:700;flex:0 0 45%;margin:0;border:0;padding:0;}
+  .summary-row dd{margin:0;border:0;padding:0;flex:1;}
+
+  /* ---- Confirmation panel ---- */
+  .govuk-panel{background:var(--green);color:#fff;text-align:center;padding:35px 25px;margin-bottom:30px;}
+  .govuk-panel h1{font-size:2.25rem;margin:0 0 15px;}
+  .govuk-panel .ref{font-size:1.6875rem;font-weight:700;}
+
+  /* ---- Footer ---- */
+  .govuk-footer{border-top:1px solid var(--mid-grey);background:var(--grey-bg);padding:25px 0;margin-top:40px;}
+  .govuk-footer .govuk-width-container{font-size:1rem;color:var(--secondary);}
+</style>
+</head>
+<body>
+
+<!-- ===== HEADER ===== -->
+<header class="govuk-header">
+  <div class="govuk-header__container">
+    <span class="govuk-header__crown">
+      <!-- simplified crown -->
+      <svg class="crown-svg" viewBox="0 0 132 97" aria-hidden="true">
+        <path d="M25 30c0-5 4-9 9-9s9 4 9 9c0 3-1 5-3 7l30 8 30-8c-2-2-3-4-3-7 0-5 4-9 9-9s9 4 9 9c0 4-3 8-7 9l6 28H26l6-28c-4-1-7-5-7-9z"/>
+        <rect x="20" y="78" width="92" height="9"/>
+      </svg>
+      <a href="#" class="govuk-header__logotype" id="hdr-gov-link">GOV.UK</a>
+    </span>
+  </div>
+</header>
+
+<!-- ===== PHASE BANNER ===== -->
+<div class="govuk-phase-banner">
+  <span class="govuk-tag">Demo</span>
+  <span>This is a mock service built for a hackathon demonstration. It is not a real government service.</span>
+</div>
+
+<div class="govuk-width-container">
+<main>
+<div class="two-thirds">
+
+  <!-- ====================================================== -->
+  <!-- STEP 0: ELIGIBILITY (the "research"/read page) -->
+  <!-- ====================================================== -->
+  <section class="step active" id="step-eligibility">
+    <h1 id="elig-title">Pension Credit: eligibility</h1>
+    <p class="lede" id="elig-lede">Pension Credit gives you extra money to help with your living costs if you’re over State Pension age and on a low income.</p>
+
+    <p id="elig-rule-1">You can get Pension Credit even if you have other income, savings or own your home.</p>
+
+    <h2 id="elig-who-heading">Who can claim</h2>
+    <p id="elig-rule-2">You must live in England, Scotland or Wales and have reached State Pension age (66 or over).</p>
+    <p id="elig-rule-3">If you have a partner, you must include them in your application. You’ll usually be eligible if your weekly income is below £218.15, or £332.95 as a couple.</p>
+
+    <div class="govuk-inset-text" id="elig-inset">
+      Around 800,000 eligible households do not claim the Pension Credit they’re entitled to — worth on average over £3,900 a year.
+    </div>
+
+    <a href="#" role="button" class="govuk-button govuk-button--start" id="btn-start">
+      Start now
+      <svg width="17.5" height="19" viewBox="0 0 33 40" fill="currentColor" aria-hidden="true"><path d="M0 0h13l20 20-20 20H0l20-20z"/></svg>
+    </a>
+  </section>
+
+  <!-- ====================================================== -->
+  <!-- STEP 1: PERSONAL DETAILS -->
+  <!-- ====================================================== -->
+  <section class="step" id="step-personal">
+    <span class="step-indicator">Step 1 of 5</span>
+    <h1>Your personal details</h1>
+
+    <div class="govuk-form-group">
+      <label for="full-name">Full name</label>
+      <input type="text" id="full-name" name="full-name" autocomplete="off" />
+    </div>
+
+    <div class="govuk-form-group">
+      <label for="dob">Date of birth</label>
+      <p class="hint">For example, 27 3 1948</p>
+      <input type="text" id="dob" name="dob" class="width-20" autocomplete="off" placeholder="DD MM YYYY" />
+    </div>
+
+    <div class="govuk-form-group">
+      <label for="ni-number">National Insurance number</label>
+      <p class="hint">It’s on your payslip, P60 or letters about tax or benefits.</p>
+      <input type="text" id="ni-number" name="ni-number" class="width-20" autocomplete="off" />
+    </div>
+
+    <button class="govuk-button" id="btn-personal-next" data-next="step-income">Continue</button>
+  </section>
+
+  <!-- ====================================================== -->
+  <!-- STEP 2: INCOME -->
+  <!-- ====================================================== -->
+  <section class="step" id="step-income">
+    <span class="step-indicator">Step 2 of 5</span>
+    <h1>Your income</h1>
+
+    <div class="govuk-form-group">
+      <label for="weekly-income">Total weekly income (£)</label>
+      <p class="hint">Include your State Pension and any other pensions.</p>
+      <input type="text" id="weekly-income" name="weekly-income" class="width-10" autocomplete="off" />
+    </div>
+
+    <div class="govuk-form-group">
+      <label for="savings">Total savings and investments (£)</label>
+      <input type="text" id="savings" name="savings" class="width-10" autocomplete="off" />
+    </div>
+
+    <div class="govuk-form-group">
+      <fieldset>
+        <legend>Do you have a partner who lives with you?</legend>
+        <div class="govuk-radios__item">
+          <input type="radio" id="partner-yes" name="partner" value="yes" />
+          <label for="partner-yes">Yes</label>
+        </div>
+        <div class="govuk-radios__item">
+          <input type="radio" id="partner-no" name="partner" value="no" />
+          <label for="partner-no">No</label>
+        </div>
+      </fieldset>
+    </div>
+
+    <button class="govuk-button" id="btn-income-next" data-next="step-housing">Continue</button>
+  </section>
+
+  <!-- ====================================================== -->
+  <!-- STEP 3: HOUSING -->
+  <!-- ====================================================== -->
+  <section class="step" id="step-housing">
+    <span class="step-indicator">Step 3 of 5</span>
+    <h1>Where you live</h1>
+
+    <div class="govuk-form-group">
+      <label for="address-line">Address</label>
+      <input type="text" id="address-line" name="address-line" autocomplete="off" />
+    </div>
+
+    <div class="govuk-form-group">
+      <label for="postcode">Postcode</label>
+      <input type="text" id="postcode" name="postcode" class="width-10" autocomplete="off" />
+    </div>
+
+    <div class="govuk-form-group">
+      <fieldset>
+        <legend>Do you own or rent your home?</legend>
+        <div class="govuk-radios__item">
+          <input type="radio" id="tenure-own" name="tenure" value="own" />
+          <label for="tenure-own">Own</label>
+        </div>
+        <div class="govuk-radios__item">
+          <input type="radio" id="tenure-rent" name="tenure" value="rent" />
+          <label for="tenure-rent">Rent</label>
+        </div>
+      </fieldset>
+    </div>
+
+    <button class="govuk-button" id="btn-housing-next" data-next="step-bank">Continue</button>
+  </section>
+
+  <!-- ====================================================== -->
+  <!-- STEP 4: BANK DETAILS -->
+  <!-- ====================================================== -->
+  <section class="step" id="step-bank">
+    <span class="step-indicator">Step 4 of 5</span>
+    <h1>How you’ll be paid</h1>
+
+    <div class="govuk-form-group">
+      <label for="account-name">Name on the account</label>
+      <input type="text" id="account-name" name="account-name" autocomplete="off" />
+    </div>
+
+    <div class="govuk-form-group">
+      <label for="sort-code">Sort code</label>
+      <p class="hint">For example, 12 34 56</p>
+      <input type="text" id="sort-code" name="sort-code" class="width-10" autocomplete="off" />
+    </div>
+
+    <div class="govuk-form-group">
+      <label for="account-number">Account number</label>
+      <input type="text" id="account-number" name="account-number" class="width-10" autocomplete="off" />
+    </div>
+
+    <button class="govuk-button" id="btn-bank-next" data-next="step-contact">Continue</button>
+  </section>
+
+  <!-- ====================================================== -->
+  <!-- STEP 5: CONTACT -->
+  <!-- ====================================================== -->
+  <section class="step" id="step-contact">
+    <span class="step-indicator">Step 5 of 5</span>
+    <h1>Contact details</h1>
+
+    <div class="govuk-form-group">
+      <label for="phone">Phone number</label>
+      <input type="tel" id="phone" name="phone" class="width-20" autocomplete="off" />
+    </div>
+
+    <div class="govuk-form-group">
+      <label for="email">Email address</label>
+      <input type="email" id="email" name="email" autocomplete="off" />
+    </div>
+
+    <button class="govuk-button" id="btn-contact-next" data-next="step-review">Review your answers</button>
+  </section>
+
+  <!-- ====================================================== -->
+  <!-- REVIEW -->
+  <!-- ====================================================== -->
+  <section class="step" id="step-review">
+    <h1>Check your answers</h1>
+    <dl class="summary-list" id="review-list"><!-- filled by JS --></dl>
+    <button class="govuk-button" id="btn-submit">Accept and submit</button>
+  </section>
+
+  <!-- ====================================================== -->
+  <!-- CONFIRMATION -->
+  <!-- ====================================================== -->
+  <section class="step" id="step-confirmation">
+    <div class="govuk-panel">
+      <h1>Application complete</h1>
+      <div>Your reference number</div>
+      <div class="ref" id="confirmation-ref">HMG-PC-4821-7390</div>
+    </div>
+    <p id="confirmation-msg">Your Pension Credit application has been submitted. You could be entitled to around £3,900 a year. You’ll get a decision letter within 6 weeks.</p>
+  </section>
+
+</div>
+</main>
+</div>
+
+<footer class="govuk-footer">
+  <div class="govuk-width-container">© Crown copyright — mock service for demonstration only</div>
+</footer>
+
+<script>
+/* =========================================================================
+   SAMWISE AUTOMATION BRIDGE
+   The agent (browserActions.ts) injects JS that calls these helpers.
+   Everything is namespaced under window.SAMWISE so it can't collide.
+   ========================================================================= */
+(function(){
+  const order = ["step-eligibility","step-personal","step-income","step-housing","step-bank","step-contact","step-review","step-confirmation"];
+
+  function post(type, payload){
+    const msg = JSON.stringify({source:"samwise-mock", type, payload});
+    if (window.ReactNativeWebView && window.ReactNativeWebView.postMessage){
+      window.ReactNativeWebView.postMessage(msg);
+    }
+  }
+
+  function showStep(id){
+    document.querySelectorAll(".step").forEach(s => s.classList.remove("active"));
+    const el = document.getElementById(id);
+    if (el){ el.classList.add("active"); window.scrollTo(0,0); post("stepChanged",{step:id}); }
+  }
+
+  // Type into a field character-by-character so the audience SEES it fill.
+  // Returns a Promise so the agent can await each field.
+  function typeInto(selector, value, delay){
+    return new Promise(resolve=>{
+      const el = document.querySelector(selector);
+      if(!el){ post("error",{selector,reason:"not found"}); return resolve(false); }
+      el.focus();
+      el.classList.add("highlight");
+      el.value = "";
+      const chars = String(value).split("");
+      let i = 0;
+      const d = delay || 55;
+      (function tick(){
+        if(i < chars.length){
+          el.value += chars[i++];
+          el.dispatchEvent(new Event("input",{bubbles:true}));
+          setTimeout(tick, d);
+        } else {
+          el.dispatchEvent(new Event("change",{bubbles:true}));
+          setTimeout(()=>{ el.classList.remove("highlight"); resolve(true); }, 160);
+        }
+      })();
+    });
+  }
+
+  function selectRadio(id){
+    const el = document.getElementById(id);
+    if(el){ el.checked = true; el.dispatchEvent(new Event("change",{bubbles:true})); el.parentElement.classList.add("highlight"); setTimeout(()=>el.parentElement.classList.remove("highlight"),600); return true;}
+    return false;
+  }
+
+  function highlight(selector){
+    const el = document.querySelector(selector);
+    if(el){ el.scrollIntoView({behavior:"smooth",block:"center"}); el.classList.add("highlight"); setTimeout(()=>el.classList.remove("highlight"),1500); }
+  }
+
+  function readText(selector){
+    const el = document.querySelector(selector);
+    return el ? el.innerText.trim() : "";
+  }
+
+  function getField(id){ const el=document.getElementById(id); return el?el.value:""; }
+
+  function buildReview(){
+    const rows = [
+      ["Full name", getField("full-name")],
+      ["Date of birth", getField("dob")],
+      ["National Insurance number", getField("ni-number")],
+      ["Weekly income", "£"+getField("weekly-income")],
+      ["Savings", "£"+getField("savings")],
+      ["Has partner", document.getElementById("partner-yes").checked ? "Yes" : (document.getElementById("partner-no").checked?"No":"")],
+      ["Address", getField("address-line")+", "+getField("postcode")],
+      ["Tenure", document.getElementById("tenure-own").checked ? "Own" : (document.getElementById("tenure-rent").checked?"Rent":"")],
+      ["Account name", getField("account-name")],
+      ["Sort code", getField("sort-code")],
+      ["Account number", getField("account-number")],
+      ["Phone", getField("phone")],
+      ["Email", getField("email")]
+    ];
+    const dl = document.getElementById("review-list");
+    dl.innerHTML = rows.map(r=>`<div class="summary-row"><dt>${r[0]}</dt><dd>${r[1]||"&mdash;"}</dd></div>`).join("");
+  }
+
+  // Wire native button clicks (also work for a human clicking)
+  document.getElementById("btn-start").addEventListener("click", e=>{e.preventDefault();showStep("step-personal");});
+  document.querySelectorAll("[data-next]").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const next = btn.getAttribute("data-next");
+      if(next === "step-review") buildReview();
+      showStep(next);
+    });
+  });
+  document.getElementById("btn-submit").addEventListener("click", ()=>{ showStep("step-confirmation"); post("submitted",{ref:"HMG-PC-4821-7390"}); });
+
+  // Expose the bridge
+  window.SAMWISE = { showStep, typeInto, selectRadio, highlight, readText, getField, buildReview, order, post };
+  post("ready",{steps:order});
+})();
+</script>
+</body>
+</html>

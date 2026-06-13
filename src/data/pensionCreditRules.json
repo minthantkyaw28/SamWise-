@@ -1,0 +1,22 @@
+{
+  "title": "Pension Credit",
+  "summary": "Pension Credit is extra money to help with your living costs if you are over State Pension age and on a low income.",
+  "rules": [
+    {
+      "id": "elig-lede",
+      "plain": "This benefit tops up your income if you're over 66 and living on a low income."
+    },
+    {
+      "id": "elig-rule-2",
+      "plain": "You need to live in England, Scotland or Wales and have reached State Pension age — that's 66 or over."
+    },
+    {
+      "id": "elig-rule-3",
+      "plain": "If you're on your own, you can usually claim when your weekly income is below £218. With a partner it's below £333."
+    },
+    {
+      "id": "elig-inset",
+      "plain": "Around 800,000 households who could get this never claim it. On average that's over £3,900 a year going unclaimed."
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "fullName": "Margaret Hill",
+  "dob": "27 03 1948",
+  "niNumber": "QQ 12 34 56 C",
+  "weeklyIncome": "165",
+  "savings": "4200",
+  "hasPartner": "no",
+  "address": "14 Oak Lane, Sheffield",
+  "postcode": "S10 2AB",
+  "tenure": "own",
+  "accountName": "Margaret Hill",
+  "sortCode": "12 34 56",
+  "accountNumber": "12345678",
+  "phone": "07700 900123",
+  "email": "margaret.hill@example.com"
+}
