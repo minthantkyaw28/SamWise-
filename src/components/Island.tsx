@@ -35,6 +35,7 @@ export function Island() {
   const setExpanded = useStore((s) => s.setIslandExpanded);
   const agentState = useStore((s) => s.agentState);
   const narration = useStore((s) => s.narration);
+  const statusLine = useStore((s) => s.statusLine);
   const pendingQuestion = useStore((s) => s.pendingQuestion);
   const listening = useStore((s) => s.listening);
   const userInput = useStore((s) => s.userInput);
@@ -104,8 +105,9 @@ export function Island() {
             <Glass strong radius={radius.pill} padding={spacing.xs} contentStyle={styles.pill}>
               <VoiceOrb size={44} state={orbState} />
               <AppText variant="bodyBold" color={colors.ink} numberOfLines={1} style={styles.pillText}>
-                {agentState === 'IDLE' ? 'Samwise' : shortStatusFor(agentState)}
+                {agentState === 'IDLE' ? 'Samwise' : statusLine || shortStatusFor(agentState)}
               </AppText>
+              <Icon name="chevron-down" size={20} color={colors.islandMuted} style={styles.pillChevron} />
             </Glass>
           </Animated.View>
         </GestureDetector>
@@ -278,6 +280,7 @@ const styles = StyleSheet.create({
   pillText: {
     maxWidth: W * 0.5,
   },
+  pillChevron: { marginLeft: 2 },
   // --- expanded panel ---
   panel: {
     width: PANEL_WIDTH,

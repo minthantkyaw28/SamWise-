@@ -139,6 +139,10 @@ class AgentOrchestrator {
         st.setAgentState('EXECUTING_STEP');
         st.setStatus(step.title);
         st.setNarration(step.narration);
+        // Get out of the way while driving the browser; pop open to ask the
+        // user. The collapsed pill still shows live status, and the user can
+        // re-expand it manually at any time.
+        st.setIslandExpanded(step.kind === 'askUser');
         haptic('light');
 
         const keepGoing = await this.execute(step);
@@ -152,9 +156,10 @@ class AgentOrchestrator {
         await this.delay(step.kind === 'fillForm' ? 200 : 300);
       }
 
-      // REVIEW already happened as a step; finish.
+      // Done — bring the full island back for the celebration / summary.
       store.getState().setAgentState('DONE');
       store.getState().setStatus('All done');
+      store.getState().setIslandExpanded(true);
       haptic('success');
     } finally {
       this.running = false;

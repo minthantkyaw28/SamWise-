@@ -1,15 +1,17 @@
 # Samwise
 
 A personal accessibility AI agent that lives as a floating "island" overlay and
-**orchestrates long-horizon, multi-step tasks** for people who struggle with
-app/website UX. You say what you want in plain language ("help me claim my
-pension") and the agent plans and executes a multi-step workflow — driving a
-**real in-app browser**, narrating every step aloud, and asking you when it
-needs input.
+**orchestrates long-horizon, harness-enabled multi-step tasks** for people who
+struggle with the maze of app/website menus, settings and UX. You say what you
+want to achieve in plain language ("help me claim my pension") and the agent
+plans and executes a multi-step workflow — driving a **real browser or any
+app**, narrating every step aloud based on true grounding, and asking you when
+it needs input.
 
 This is a **hackathon demo**. The golden path: an older user claims UK **Pension
-Credit** — the agent reads the eligibility rules, asks 1–2 questions, then
-**visibly drives a 5-section form** field-by-field and submits it.
+Credit** — the agent reads the eligibility rules and process from His Majesty's
+Department for Work and Pensions (DWP), asks questions, then **visibly drives a
+section form field-by-field** and submits it.
 
 The interface uses the **Samwise design system** — a calm liquid-glass look over
 a warm aurora, built accessibility-first (large type, high contrast, big touch

@@ -7,20 +7,6 @@ import type {
   PendingQuestion,
 } from '../agent/types';
 
-/** A single line in the live agent-activity log (the 30% panel). */
-export type LogEntry = { id: number; text: string; kind: 'status' | 'narration' | 'progress' };
-
-let _logSeq = 0;
-const LOG_CAP = 80;
-function appendLog(log: LogEntry[], text: string, kind: LogEntry['kind']): LogEntry[] {
-  const t = (text ?? '').trim();
-  if (!t) return log;
-  const last = log[log.length - 1];
-  if (last && last.text === t) return log; // dedupe consecutive duplicates
-  const next = log.concat({ id: ++_logSeq, text: t, kind });
-  return next.length > LOG_CAP ? next.slice(next.length - LOG_CAP) : next;
-}
-
 type SamwiseState = {
   // --- machine ---
   agentState: AgentState;
@@ -35,8 +21,6 @@ type SamwiseState = {
   statusLine: string;
   /** True while the agent is "thinking" (planning / between actions). */
   thinking: boolean;
-  /** Append-only feed of what the agent has been doing — the 30% log panel. */
-  log: LogEntry[];
 
   // --- island / conversation ---
   islandExpanded: boolean;
@@ -74,7 +58,6 @@ type SamwiseState = {
   setSpeaking: (v: boolean) => void;
   setListening: (v: boolean) => void;
   setVoiceEnabled: (v: boolean) => void;
-  clearLog: () => void;
   reset: () => void;
 };
 
@@ -86,7 +69,6 @@ const initialState = {
   narration: '',
   statusLine: '',
   thinking: false,
-  log: [] as LogEntry[],
   islandExpanded: false,
   userInput: '',
   pendingQuestion: null as PendingQuestion | null,
@@ -120,10 +102,8 @@ export const useStore = create<SamwiseState>((set) => ({
       ),
     })),
   setCurrentStep: (index) => set({ currentStepIndex: index }),
-  setNarration: (text) =>
-    set((state) => ({ narration: text, log: appendLog(state.log, text, 'narration') })),
-  setStatus: (line) =>
-    set((state) => ({ statusLine: line, log: appendLog(state.log, line, 'status') })),
+  setNarration: (text) => set({ narration: text }),
+  setStatus: (line) => set({ statusLine: line }),
   setThinking: (v) => set({ thinking: v }),
   setIslandExpanded: (v) => set({ islandExpanded: v }),
   setUserInput: (v) => set({ userInput: v }),
@@ -133,12 +113,10 @@ export const useStore = create<SamwiseState>((set) => ({
   setBrowserVisible: (v) => set({ browserVisible: v }),
   setBrowserUrl: (url) => set({ browserUrl: url }),
   setWebReady: (v) => set({ webReady: v }),
-  setFormProgress: (label) =>
-    set((state) => ({ formProgressLabel: label, log: appendLog(state.log, label, 'progress') })),
+  setFormProgress: (label) => set({ formProgressLabel: label }),
   setSpeaking: (v) => set({ speaking: v }),
   setListening: (v) => set({ listening: v }),
   setVoiceEnabled: (v) => set({ voiceEnabled: v }),
-  clearLog: () => set({ log: [] }),
   reset: () =>
     set((state) => ({
       ...initialState,
