@@ -37,6 +37,7 @@ export function Island() {
   const setExpanded = useStore((s) => s.setIslandExpanded);
   const agentState = useStore((s) => s.agentState);
   const narration = useStore((s) => s.narration);
+  const statusLine = useStore((s) => s.statusLine);
   const pendingQuestion = useStore((s) => s.pendingQuestion);
   const listening = useStore((s) => s.listening);
   const userInput = useStore((s) => s.userInput);
@@ -97,14 +98,18 @@ export function Island() {
   };
 
   if (!expanded) {
+    const pillLabel =
+      agentState === 'IDLE' ? 'Samwise' : statusLine || shortStatusFor(agentState);
     return (
       <Animated.View pointerEvents="box-none" style={[styles.containerCollapsed, posStyle]}>
         <GestureDetector gesture={collapsedGesture}>
-          <Animated.View style={styles.pill}>
+          <Animated.View entering={FadeIn.duration(220)} style={styles.pill}>
             <PulseDot active={agentState !== 'IDLE'} listening={listening} />
             <Text style={styles.pillText} numberOfLines={1}>
-              {agentState === 'IDLE' ? 'Samwise' : shortStatusFor(agentState)}
+              {pillLabel}
             </Text>
+            {/* dropdown affordance — tap the pill to re-open the full island */}
+            <Text style={styles.pillChevron}>⌄</Text>
           </Animated.View>
         </GestureDetector>
       </Animated.View>
@@ -116,7 +121,7 @@ export function Island() {
 
   return (
     <Animated.View pointerEvents="box-none" style={[styles.containerExpanded, posStyle]}>
-      <View style={styles.panel}>
+      <Animated.View entering={FadeIn.duration(240)} style={styles.panel}>
         <GestureDetector gesture={headerGesture}>
           <Animated.View style={styles.header}>
             <View style={styles.grabber} />
@@ -213,7 +218,7 @@ export function Island() {
             </Animated.View>
           )}
         </ScrollView>
-      </View>
+      </Animated.View>
     </Animated.View>
   );
 }
@@ -296,6 +301,12 @@ const styles = StyleSheet.create({
     fontSize: font.body,
     fontWeight: font.weightBold,
     maxWidth: W * 0.5,
+  },
+  pillChevron: {
+    color: colors.islandMuted,
+    fontSize: 22,
+    lineHeight: 22,
+    marginLeft: 2,
   },
   // --- expanded panel ---
   panel: {
