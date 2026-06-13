@@ -11,6 +11,11 @@ This is a **hackathon demo**. The golden path: an older user claims UK **Pension
 Credit** — the agent reads the eligibility rules, asks 1–2 questions, then
 **visibly drives a 5-section form** field-by-field and submits it.
 
+The interface uses the **Samwise design system** — a calm liquid-glass look over
+a warm aurora, built accessibility-first (large type, high contrast, big touch
+targets). While the agent works, the screen splits **70% "what's happening" /
+30% "agent logs"** (see [The interface](#the-interface--samwise-design-system)).
+
 ## Run it
 
 ```bash
@@ -19,7 +24,8 @@ cp .env.example .env     # optional — add API keys (see below); works without 
 npm start                # = expo start (also syncs the mock site into assets/)
 ```
 
-Then press `i` (iOS simulator), `a` (Android), or scan the QR with Expo Go.
+Then press `i` (iOS simulator), `a` (Android), or scan the QR with **Expo Go**.
+It runs fully in **Expo Go** — no development build or native modules required.
 
 The full demo runs with **no API keys** — narration shows as large text and the
 agent drives the browser deterministically. Keys add polish:
@@ -28,6 +34,35 @@ agent drives the browser deterministically. Keys add polish:
   during `PLANNING` (cached, never blocks the live run).
 - `EXPO_PUBLIC_ELEVENLABS_API_KEY` — voice narration (TTS) + mic input (STT),
   pre-cached during `PLANNING`. Degrades to on-device `expo-speech`, then text.
+
+## The interface — Samwise design system
+
+The UI is a reusable design system layered cleanly over the agent: all view
+state flows through `src/state/store.ts` (the orchestrator is the only writer),
+and the components are purely presentational — so you can re-skin without
+touching any logic.
+
+- **`src/theme/tokens.ts`** — the single source of truth: palette, type ramp
+  (**Lexend** for display, **Inter** for body), spacing, radii, `gradients`,
+  `glass`, shadows. Change values here to re-skin the whole app.
+- **`src/ui/`** — the component kit: `Glass` (frosted card via `expo-blur`),
+  `ScreenBackground` (aurora gradient + soft blobs), `VoiceOrb` (the living agent
+  orb), `AppText`, `Icon` (`@expo/vector-icons`), `GradientButton`, `Waveform`,
+  and `AgentLogFeed`.
+- **The 70/30 work layout (`App.tsx`)** — while the agent works, the screen is split:
+  - **70% — the stage** (`src/components/BrowserStage.tsx`): the real WebView the
+    agent drives — *what's actually happening*.
+  - **30% — the agent log** (`src/components/AgentLogPanel.tsx` → `AgentLogFeed`):
+    a live, scrolling feed of everything the agent is doing, fed by the store's
+    append-only `log` (appended inside `setStatus` / `setNarration` /
+    `setFormProgress` — see `src/state/store.ts`).
+  - The **Island** (`src/components/Island.tsx`) floats on top as the glass voice
+    control (drag, tap to expand, long-press to advance), with the `VoiceOrb` as
+    the agent's face.
+
+Added UI dependencies — `expo-blur`, `expo-linear-gradient`,
+`react-native-safe-area-context`, `@expo/vector-icons`,
+`@expo-google-fonts/{lexend,inter}` — are all Expo Go-compatible.
 
 ## How it works
 
@@ -40,6 +75,8 @@ IDLE → LISTENING → PLANNING → EXECUTING_STEP ⇄ AWAITING_USER → REVIEW 
   live run is deterministic.
 - **`src/agent/AgentOrchestrator.ts`** — the state machine. Walks the plan,
   narrates, drives the browser, ticks the checklist, pauses for the user.
+- **`src/state/store.ts`** — the zustand store the UI renders (incl. the new
+  append-only `log` feed). The orchestrator is the only writer.
 - **`src/components/MockBrowser.tsx`** — a real `react-native-webview` that loads
   the bundled mock GOV.UK page (`assets/mock-site.html`, single source:
   `mock-site/index.html`). No network dependency.
@@ -64,4 +101,3 @@ IDLE → LISTENING → PLANNING → EXECUTING_STEP ⇄ AWAITING_USER → REVIEW 
 `assets/mock-site.html`, which Metro bundles (see `metro.config.js`). The page
 exposes a stable automation contract documented at the top of the file — never
 rename its element ids without updating `samwisePlan.ts` / `browserActions.ts`.
-```

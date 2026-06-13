@@ -7,10 +7,9 @@ import Animated, {
   withDelay,
   withTiming,
 } from 'react-native-reanimated';
-import { colors } from '../theme/tokens';
 
 const { width: W, height: H } = Dimensions.get('window');
-const PIECE_COLORS = [colors.accent, colors.success, '#E8B53A', colors.accentDark, '#3A7BD5'];
+const PIECE_COLORS = ['#2C6BE0', '#A78BEA', '#FF9E80', '#13A06A', '#67A8FF', '#FB6F4A'];
 const PIECES = 28;
 
 /** Lightweight celebration burst shown when the claim is submitted. */

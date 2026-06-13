@@ -1,74 +1,107 @@
 import React from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
-import { colors, font, radius, shadowCard, spacing } from '../theme/tokens';
+import { ScrollView, StyleSheet, View } from 'react-native';
 
-const SERVICES = [
-  { icon: '💷', label: 'Pensions & benefits', tint: colors.accentSoft },
-  { icon: '🏥', label: 'Health & care', tint: '#E2F1E7' },
-  { icon: '🏦', label: 'Banking', tint: '#E6EEF8' },
-  { icon: '🏠', label: 'Housing & council', tint: '#F3ECE0' },
-  { icon: '🚗', label: 'Driving & travel', tint: '#F6E2DC' },
-  { icon: '📄', label: 'Taxes', tint: '#EDE7F6' },
+import { AppText, Glass, Icon, ScreenBackground, VoiceOrb, type IconName } from '../ui';
+import { colors, glass, radius, spacing } from '../theme/tokens';
+
+type Service = {
+  icon: IconName;
+  tint: string;
+  label: string;
+  subtitle: string;
+};
+
+const SERVICES: Service[] = [
+  { icon: 'pound', tint: colors.accentSoft, label: 'Pensions & benefits', subtitle: 'Pension Credit, allowances, top-ups' },
+  { icon: 'cross-medical', tint: '#E2F4EC', label: 'Health & care', subtitle: 'GP, prescriptions, appointments' },
+  { icon: 'home', tint: '#E6EEF8', label: 'Banking', subtitle: 'Balances, payments, statements' },
+  { icon: 'pin', tint: '#F3ECE0', label: 'Housing & council', subtitle: 'Council tax, housing support' },
+  { icon: 'globe', tint: '#F6E2DC', label: 'Driving & travel', subtitle: 'Licence, bus pass, renewals' },
+  { icon: 'doc', tint: '#EDE7F6', label: 'Taxes', subtitle: 'Self-assessment, refunds, forms' },
 ];
 
-/** The mock phone home / "everything is behind an app" backdrop. */
+/** The idle "phone home" backdrop — pure presentation, no store reads. */
 export function HomeScreen() {
   return (
-    <View style={styles.root}>
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <Text style={styles.greeting}>Good afternoon</Text>
-        <Text style={styles.title}>Your services</Text>
-        <Text style={styles.sub}>Everything you need — in one place. Just ask Samwise.</Text>
+    <ScreenBackground>
+      <ScrollView
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.hero}>
+          <VoiceOrb state="idle" size={130} />
+          <AppText variant="hero" center style={styles.heroTitle}>
+            Hi, I’m Samwise
+          </AppText>
+          <AppText variant="bodyLg" color={colors.inkSoft} center style={styles.heroSub}>
+            Tell me what you need to do — I’ll handle the fiddly bits with you, one
+            step at a time.
+          </AppText>
+        </View>
 
-        <View style={styles.grid}>
+        <AppText variant="label" color={colors.inkSoft} style={styles.sectionLabel}>
+          THINGS I CAN HELP WITH
+        </AppText>
+
+        <View style={styles.list}>
           {SERVICES.map((s) => (
-            <View key={s.label} style={styles.tile}>
+            <Glass key={s.label} contentStyle={styles.card}>
               <View style={[styles.iconWrap, { backgroundColor: s.tint }]}>
-                <Text style={styles.icon}>{s.icon}</Text>
+                <Icon name={s.icon} size={28} color={colors.accent} />
               </View>
-              <Text style={styles.tileLabel}>{s.label}</Text>
-            </View>
+              <View style={styles.cardText}>
+                <AppText variant="heading">{s.label}</AppText>
+                <AppText variant="body" color={colors.inkSoft}>
+                  {s.subtitle}
+                </AppText>
+              </View>
+            </Glass>
           ))}
         </View>
 
-        <View style={styles.hintCard}>
-          <Text style={styles.hintTitle}>Need a hand?</Text>
-          <Text style={styles.hintText}>
-            Tap the Samwise island at the top and say what you’d like to do — in your own words.
-          </Text>
-        </View>
+        <Glass style={styles.hint} tint={glass.tintWash} contentStyle={styles.hintContent}>
+          <View style={styles.hintIcon}>
+            <Icon name="sparkles" size={24} color={colors.accent} />
+          </View>
+          <AppText variant="bodyLg" style={styles.hintText}>
+            Tap the Samwise button at the top — or just start talking.
+          </AppText>
+        </Glass>
       </ScrollView>
-    </View>
+    </ScreenBackground>
   );
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: colors.bg },
-  content: { padding: spacing.lg, paddingTop: 150, paddingBottom: spacing.xxl },
-  greeting: { fontSize: font.body, color: colors.inkSoft, fontWeight: font.weightMedium },
-  title: { fontSize: font.display, color: colors.ink, fontWeight: font.weightBold, marginTop: 4 },
-  sub: {
-    fontSize: font.body,
-    color: colors.inkSoft,
-    marginTop: spacing.sm,
-    marginBottom: spacing.lg,
-    lineHeight: font.body * 1.4,
+  content: {
+    paddingTop: 110,
+    paddingHorizontal: spacing.lg,
+    paddingBottom: spacing.xxl,
   },
-  grid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.md,
-    justifyContent: 'space-between',
-  },
-  tile: {
-    width: '47%',
-    backgroundColor: colors.surface,
-    borderRadius: radius.md,
-    padding: spacing.md,
+  hero: {
+    alignItems: 'center',
     gap: spacing.sm,
-    ...shadowCard,
-    shadowOpacity: 0.08,
-    elevation: 4,
+    marginBottom: spacing.xl,
+  },
+  heroTitle: {
+    marginTop: spacing.sm,
+  },
+  heroSub: {
+    maxWidth: 340,
+  },
+  sectionLabel: {
+    letterSpacing: 1,
+    marginBottom: spacing.md,
+    marginLeft: spacing.xs,
+  },
+  list: {
+    gap: spacing.md,
+  },
+  card: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    padding: spacing.md,
   },
   iconWrap: {
     width: 64,
@@ -77,15 +110,28 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  icon: { fontSize: 34 },
-  tileLabel: { fontSize: font.body, color: colors.ink, fontWeight: font.weightMedium },
-  hintCard: {
-    marginTop: spacing.xl,
-    backgroundColor: colors.island,
-    borderRadius: radius.md,
-    padding: spacing.lg,
-    gap: spacing.sm,
+  cardText: {
+    flex: 1,
+    gap: spacing.xs,
   },
-  hintTitle: { color: colors.islandInk, fontSize: font.bodyLarge, fontWeight: font.weightBold },
-  hintText: { color: colors.islandMuted, fontSize: font.body, lineHeight: font.body * 1.4 },
+  hint: {
+    marginTop: spacing.xl,
+  },
+  hintContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    padding: spacing.lg,
+  },
+  hintIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: radius.sm,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: glass.strong,
+  },
+  hintText: {
+    flex: 1,
+  },
 });

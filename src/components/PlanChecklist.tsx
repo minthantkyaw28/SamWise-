@@ -1,7 +1,8 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
-import { colors, font, radius, spacing } from '../theme/tokens';
+import { AppText, Icon } from '../ui';
+import { colors, radius, spacing } from '../theme/tokens';
 import { useStore } from '../state/store';
 import type { ChecklistStatus } from '../agent/types';
 
@@ -12,7 +13,9 @@ export function PlanChecklist() {
 
   return (
     <View style={styles.wrap}>
-      <Text style={styles.heading}>My plan</Text>
+      <AppText variant="label" color={colors.inkSoft} style={styles.heading}>
+        My plan
+      </AppText>
       {checklist.map((item, i) => (
         <Animated.View
           key={item.id}
@@ -20,16 +23,17 @@ export function PlanChecklist() {
           style={styles.row}
         >
           <Marker status={item.status} />
-          <Text
+          <AppText
+            variant="body"
+            color={item.status === 'done' ? colors.islandMuted : colors.islandInk}
             style={[
               styles.label,
               item.status === 'done' && styles.labelDone,
-              item.status === 'active' && styles.labelActive,
             ]}
             numberOfLines={2}
           >
             {item.title}
-          </Text>
+          </AppText>
         </Animated.View>
       ))}
     </View>
@@ -40,7 +44,7 @@ function Marker({ status }: { status: ChecklistStatus }) {
   if (status === 'done') {
     return (
       <View style={[styles.marker, styles.markerDone]}>
-        <Text style={styles.check}>✓</Text>
+        <Icon name="check" color="#fff" size={16} />
       </View>
     );
   }
@@ -60,9 +64,6 @@ const styles = StyleSheet.create({
     gap: spacing.xs,
   },
   heading: {
-    color: colors.islandMuted,
-    fontSize: font.bodySmall,
-    fontWeight: font.weightBold,
     textTransform: 'uppercase',
     letterSpacing: 1,
     marginBottom: spacing.xs,
@@ -82,8 +83,7 @@ const styles = StyleSheet.create({
   },
   markerPending: {
     borderWidth: 2,
-    borderColor: colors.islandMuted,
-    opacity: 0.6,
+    borderColor: colors.pending,
   },
   markerActive: {
     backgroundColor: colors.accentSoft,
@@ -99,21 +99,10 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     backgroundColor: colors.accent,
   },
-  check: {
-    color: colors.surface,
-    fontSize: 16,
-    fontWeight: font.weightBold,
-  },
   label: {
     flex: 1,
-    color: colors.islandInk,
-    fontSize: font.body,
-  },
-  labelActive: {
-    fontWeight: font.weightBold,
   },
   labelDone: {
-    color: colors.islandMuted,
     textDecorationLine: 'line-through',
   },
 });

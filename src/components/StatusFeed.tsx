@@ -1,8 +1,11 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
-import { colors, font, spacing } from '../theme/tokens';
+import { AppText } from '../ui';
+import { colors, spacing } from '../theme/tokens';
 import { useStore } from '../state/store';
+
+const AnimatedAppText = Animated.createAnimatedComponent(AppText);
 
 /** The "what I'm doing right now" line, plus form-fill sub-progress. */
 export function StatusFeed() {
@@ -16,25 +19,29 @@ export function StatusFeed() {
     <View style={styles.wrap}>
       <View style={styles.row}>
         <View style={styles.dot} />
-        <Animated.Text
+        <AnimatedAppText
           key={statusLine}
           entering={FadeIn.duration(260)}
           exiting={FadeOut.duration(160)}
+          variant="body"
+          color={colors.islandInk}
           style={styles.status}
           numberOfLines={2}
         >
           {thinking ? 'Thinking…' : statusLine}
-        </Animated.Text>
+        </AnimatedAppText>
       </View>
       {!!formProgress && (
-        <Animated.Text
+        <AnimatedAppText
           key={formProgress}
           entering={FadeIn.duration(260)}
+          variant="caption"
+          color={colors.inkSoft}
           style={styles.progress}
           numberOfLines={1}
         >
           {formProgress}
-        </Animated.Text>
+        </AnimatedAppText>
       )}
     </View>
   );
@@ -50,21 +57,16 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   dot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    backgroundColor: colors.active,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: colors.accent,
   },
   status: {
     flex: 1,
-    color: colors.islandInk,
-    fontSize: font.body,
-    fontWeight: font.weightMedium,
   },
   progress: {
     marginTop: spacing.xs,
-    marginLeft: 24,
-    color: colors.islandMuted,
-    fontSize: font.bodySmall,
+    marginLeft: 22,
   },
 });

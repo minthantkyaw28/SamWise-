@@ -1,36 +1,34 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import {
   Dimensions,
   Keyboard,
   Pressable,
   ScrollView,
   StyleSheet,
-  Text,
   TextInput,
   View,
 } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
-import Animated, {
-  Easing,
-  FadeIn,
-  runOnJS,
-  useAnimatedStyle,
-  useSharedValue,
-  withRepeat,
-  withSequence,
-  withSpring,
-  withTiming,
-} from 'react-native-reanimated';
-import { colors, font, radius, shadowCard, spacing, touch } from '../theme/tokens';
+import Animated, { FadeIn, runOnJS, useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
+import { colors, font, glass, radius, spacing, touch } from '../theme/tokens';
 import { useStore } from '../state/store';
 import { orchestrator } from '../agent/AgentOrchestrator';
 import { voice } from '../voice/useVoice';
-import { PlanChecklist } from './PlanChecklist';
-import { StatusFeed } from './StatusFeed';
 import { BigButton } from './BigButton';
+import { AppText, Glass, Icon, VoiceOrb, Waveform, type OrbState } from '../ui';
 
 const { width: W, height: H } = Dimensions.get('window');
 const PANEL_WIDTH = W - 24;
+
+function orbStateFor(agentState: string, listening: boolean): OrbState {
+  return listening
+    ? 'listening'
+    : agentState === 'DONE'
+      ? 'success'
+      : agentState === 'PLANNING'
+        ? 'thinking'
+        : 'idle';
+}
 
 export function Island() {
   const expanded = useStore((s) => s.islandExpanded);
@@ -96,15 +94,19 @@ export function Island() {
     orchestrator.startTask(heard?.trim() || userInput.trim() || 'Help me claim my pension');
   };
 
+  const orbState = orbStateFor(agentState, listening);
+
   if (!expanded) {
     return (
       <Animated.View pointerEvents="box-none" style={[styles.containerCollapsed, posStyle]}>
         <GestureDetector gesture={collapsedGesture}>
-          <Animated.View style={styles.pill}>
-            <PulseDot active={agentState !== 'IDLE'} listening={listening} />
-            <Text style={styles.pillText} numberOfLines={1}>
-              {agentState === 'IDLE' ? 'Samwise' : shortStatusFor(agentState)}
-            </Text>
+          <Animated.View>
+            <Glass strong radius={radius.pill} padding={spacing.xs} contentStyle={styles.pill}>
+              <VoiceOrb size={44} state={orbState} />
+              <AppText variant="bodyBold" color={colors.ink} numberOfLines={1} style={styles.pillText}>
+                {agentState === 'IDLE' ? 'Samwise' : shortStatusFor(agentState)}
+              </AppText>
+            </Glass>
           </Animated.View>
         </GestureDetector>
       </Animated.View>
@@ -116,14 +118,16 @@ export function Island() {
 
   return (
     <Animated.View pointerEvents="box-none" style={[styles.containerExpanded, posStyle]}>
-      <View style={styles.panel}>
+      <Glass strong radius={radius.lg} padding={0} style={styles.panel} contentStyle={styles.panelContent}>
         <GestureDetector gesture={headerGesture}>
           <Animated.View style={styles.header}>
             <View style={styles.grabber} />
             <View style={styles.headerRow}>
               <View style={styles.brandRow}>
-                <PulseDot active={agentState !== 'IDLE'} listening={listening} />
-                <Text style={styles.brand}>Samwise</Text>
+                <VoiceOrb size={56} state={orbState} />
+                <AppText variant="title" color={colors.ink}>
+                  Samwise
+                </AppText>
               </View>
               <Pressable
                 onPress={collapse}
@@ -131,7 +135,7 @@ export function Island() {
                 accessibilityLabel="Minimise"
                 style={styles.chevron}
               >
-                <Text style={styles.chevronText}>⌄</Text>
+                <Icon name="chevron-down" size={28} color={colors.inkSoft} />
               </Pressable>
             </View>
           </Animated.View>
@@ -145,17 +149,19 @@ export function Island() {
         >
           {/* Big narration text — what the agent is saying right now. */}
           {!!narration && (
-            <Animated.Text key={narration} entering={FadeIn.duration(300)} style={styles.narration}>
-              {narration}
-            </Animated.Text>
+            <Animated.View key={narration} entering={FadeIn.duration(300)} style={styles.narrationWrap}>
+              <AppText variant="bodyLg" color={colors.ink}>
+                {narration}
+              </AppText>
+            </Animated.View>
           )}
-
-          <StatusFeed />
 
           {/* The question + big answer buttons. */}
           {pendingQuestion && (
             <Animated.View entering={FadeIn.duration(300)} style={styles.questionBlock}>
-              <Text style={styles.question}>{pendingQuestion.question}</Text>
+              <AppText variant="title" color={colors.ink} style={styles.question}>
+                {pendingQuestion.question}
+              </AppText>
               <View style={styles.options}>
                 {pendingQuestion.options.map((opt) => (
                   <BigButton
@@ -170,12 +176,12 @@ export function Island() {
             </Animated.View>
           )}
 
-          <PlanChecklist />
-
           {/* Idle: the conversational entry point. */}
           {idle && !pendingQuestion && (
             <View style={styles.inputArea}>
-              <Text style={styles.prompt}>What would you like help with?</Text>
+              <AppText variant="bodyLg" color={colors.ink}>
+                What would you like help with?
+              </AppText>
               <View style={styles.inputRow}>
                 <TextInput
                   value={userInput}
@@ -187,24 +193,32 @@ export function Island() {
                   returnKeyType="go"
                 />
                 <Pressable onPress={submit} style={styles.send} accessibilityLabel="Send">
-                  <Text style={styles.sendText}>→</Text>
+                  <Icon name="arrow-right" size={28} color={colors.surface} />
                 </Pressable>
               </View>
               <Pressable onPress={onMic} style={styles.micButton} accessibilityLabel="Speak">
-                <Text style={styles.micIcon}>🎙</Text>
-                <Text style={styles.micLabel}>
+                {listening ? (
+                  <Waveform active color={colors.accent} />
+                ) : (
+                  <Icon name="mic" size={26} color={colors.accent} />
+                )}
+                <AppText variant="bodyBold" color={colors.ink}>
                   {listening ? 'Listening…' : 'Tap to ask by voice'}
-                </Text>
+                </AppText>
               </Pressable>
               <Pressable onPress={submit} hitSlop={8} style={styles.suggestion}>
-                <Text style={styles.suggestionText}>“Help me claim my pension”</Text>
+                <AppText variant="body" color={colors.inkSoft} style={styles.suggestionText}>
+                  “Help me claim my pension”
+                </AppText>
               </Pressable>
             </View>
           )}
 
           {done && (
             <Animated.View entering={FadeIn.duration(400)} style={styles.doneBlock}>
-              <Text style={styles.doneTitle}>Claim submitted 🎉</Text>
+              <AppText variant="title" color={colors.ink}>
+                Claim submitted 🎉
+              </AppText>
               <BigButton
                 label="Start again"
                 variant="secondary"
@@ -213,35 +227,8 @@ export function Island() {
             </Animated.View>
           )}
         </ScrollView>
-      </View>
+      </Glass>
     </Animated.View>
-  );
-}
-
-function PulseDot({ active, listening }: { active: boolean; listening: boolean }) {
-  const scale = useSharedValue(1);
-  useEffect(() => {
-    if (active || listening) {
-      scale.value = withRepeat(
-        withSequence(
-          withTiming(1.5, { duration: 600, easing: Easing.inOut(Easing.ease) }),
-          withTiming(1, { duration: 600, easing: Easing.inOut(Easing.ease) })
-        ),
-        -1,
-        false
-      );
-    } else {
-      scale.value = withTiming(1);
-    }
-  }, [active, listening, scale]);
-
-  const style = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
-  return (
-    <View style={styles.dotWrap}>
-      <Animated.View
-        style={[styles.dot, { backgroundColor: listening ? colors.accent : colors.success }, style]}
-      />
-    </View>
   );
 }
 
@@ -284,27 +271,20 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
-    backgroundColor: colors.island,
     paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    borderRadius: radius.pill,
+    paddingVertical: spacing.xs,
     minHeight: 52,
-    ...shadowCard,
   },
   pillText: {
-    color: colors.islandInk,
-    fontSize: font.body,
-    fontWeight: font.weightBold,
     maxWidth: W * 0.5,
   },
   // --- expanded panel ---
   panel: {
     width: PANEL_WIDTH,
-    backgroundColor: colors.island,
-    borderRadius: radius.lg,
     maxHeight: H * 0.74,
-    overflow: 'hidden',
-    ...shadowCard,
+  },
+  panelContent: {
+    maxHeight: H * 0.74,
   },
   header: {
     paddingTop: spacing.sm,
@@ -326,51 +306,33 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   brandRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
-  brand: {
-    color: colors.islandInk,
-    fontSize: font.bodyLarge,
-    fontWeight: font.weightBold,
-  },
   chevron: {
     width: 44,
     height: 44,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  chevronText: { color: colors.islandMuted, fontSize: 28, lineHeight: 28 },
   body: { paddingHorizontal: spacing.md },
   bodyContent: { paddingBottom: spacing.lg },
-  narration: {
-    color: colors.islandInk,
-    fontSize: font.bodyLarge,
-    lineHeight: font.bodyLarge * 1.35,
-    fontWeight: font.weightMedium,
-    marginBottom: spacing.sm,
-  },
+  narrationWrap: { marginBottom: spacing.sm },
   questionBlock: { marginTop: spacing.md },
   question: {
-    color: colors.islandInk,
-    fontSize: font.title,
-    fontWeight: font.weightBold,
     marginBottom: spacing.md,
-    lineHeight: font.title * 1.25,
   },
   options: { gap: spacing.sm },
   option: { width: '100%' },
   inputArea: { marginTop: spacing.md, gap: spacing.md },
-  prompt: {
-    color: colors.islandInk,
-    fontSize: font.bodyLarge,
-    fontWeight: font.weightMedium,
-  },
   inputRow: { flexDirection: 'row', gap: spacing.sm, alignItems: 'center' },
   input: {
     flex: 1,
     minHeight: touch.minHeight,
-    backgroundColor: '#26221E',
+    backgroundColor: glass.dim,
     borderRadius: radius.md,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: glass.hairline,
     paddingHorizontal: spacing.md,
-    color: colors.islandInk,
+    color: colors.ink,
+    fontFamily: font.familyBody,
     fontSize: font.body,
   },
   send: {
@@ -381,7 +343,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  sendText: { color: colors.surface, fontSize: 30, fontWeight: font.weightBold },
   micButton: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -390,19 +351,10 @@ const styles = StyleSheet.create({
     minHeight: touch.minHeight,
     borderRadius: radius.md,
     borderWidth: 2,
-    borderColor: colors.islandMuted,
+    borderColor: colors.accentSoft,
+    backgroundColor: glass.dim,
   },
-  micIcon: { fontSize: 26 },
-  micLabel: { color: colors.islandInk, fontSize: font.body, fontWeight: font.weightMedium },
   suggestion: { alignItems: 'center', paddingVertical: spacing.xs },
-  suggestionText: { color: colors.islandMuted, fontSize: font.body, fontStyle: 'italic' },
+  suggestionText: { fontStyle: 'italic' },
   doneBlock: { marginTop: spacing.lg, gap: spacing.md },
-  doneTitle: {
-    color: colors.islandInk,
-    fontSize: font.title,
-    fontWeight: font.weightBold,
-  },
-  // --- shared dot ---
-  dotWrap: { width: 16, alignItems: 'center', justifyContent: 'center' },
-  dot: { width: 12, height: 12, borderRadius: 6 },
 });
