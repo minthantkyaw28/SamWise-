@@ -6,12 +6,13 @@ import { orchestrator } from '../agent/AgentOrchestrator';
 import type { BrowserHandle } from '../agent/browserActions';
 import type { BridgeMessage } from '../agent/types';
 import { useStore } from '../state/store';
-import { AppText, Glass, Icon } from '../ui';
+import { AppText, Icon } from '../ui';
 import { colors, glass, radius, shadowCard, spacing } from '../theme/tokens';
 
 /**
  * The "real in-app browser" card. Always mounted so the WebView preloads, but
- * only revealed (animated in) once the agent reaches the research step.
+ * only revealed (animated in) once the agent reaches a browser step. It is a
+ * SOLID card (not glass) — a WebView will not render inside a BlurView on iOS.
  */
 export function BrowserStage() {
   const visible = useStore((s) => s.browserVisible);
@@ -40,29 +41,24 @@ export function BrowserStage() {
   }));
 
   return (
-    <Animated.View
-      pointerEvents={visible ? 'auto' : 'none'}
-      style={[styles.stage, animStyle]}
-    >
-      <Glass strong noShadow radius={radius.lg} contentStyle={styles.card}>
-        {/* Fake browser chrome so it reads as a real, hosted page. */}
-        <View style={styles.chrome}>
-          <View style={styles.dots}>
-            <View style={[styles.dot, { backgroundColor: '#ff5f57' }]} />
-            <View style={[styles.dot, { backgroundColor: '#febc2e' }]} />
-            <View style={[styles.dot, { backgroundColor: '#28c840' }]} />
-          </View>
-          <View style={styles.urlBar}>
-            <Icon name="lock" size={12} color={colors.success} />
-            <AppText variant="caption" color={colors.inkSoft} numberOfLines={1} style={styles.url}>
-              {url || 'www.gov.uk'}
-            </AppText>
-          </View>
+    <Animated.View pointerEvents={visible ? 'auto' : 'none'} style={[styles.stage, animStyle]}>
+      {/* Fake browser chrome so it reads as a real, hosted page. */}
+      <View style={styles.chrome}>
+        <View style={styles.dots}>
+          <View style={[styles.dot, { backgroundColor: '#ff5f57' }]} />
+          <View style={[styles.dot, { backgroundColor: '#febc2e' }]} />
+          <View style={[styles.dot, { backgroundColor: '#28c840' }]} />
         </View>
-        <View style={styles.webWrap}>
-          <MockBrowser ref={handleRef} onEvent={onEvent} />
+        <View style={styles.urlBar}>
+          <Icon name="lock" size={12} color={colors.success} />
+          <AppText variant="caption" color={colors.inkSoft} numberOfLines={1} style={styles.url}>
+            {url || 'www.gov.uk'}
+          </AppText>
         </View>
-      </Glass>
+      </View>
+      <View style={styles.webWrap}>
+        <MockBrowser ref={handleRef} onEvent={onEvent} />
+      </View>
     </Animated.View>
   );
 }
@@ -73,15 +69,12 @@ const styles = StyleSheet.create({
     top: 100,
     left: spacing.sm,
     right: spacing.sm,
-    bottom: '32%',
+    bottom: spacing.md,
+    backgroundColor: colors.surface,
     borderRadius: radius.lg,
+    overflow: 'hidden',
     zIndex: 50,
     ...shadowCard,
-  },
-  card: {
-    flex: 1,
-    padding: 0,
-    overflow: 'hidden',
   },
   chrome: {
     flexDirection: 'row',
@@ -89,7 +82,7 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
-    backgroundColor: glass.strong,
+    backgroundColor: '#F2F0EB',
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: glass.hairline,
   },
@@ -100,10 +93,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.xs,
-    backgroundColor: colors.surface,
+    backgroundColor: '#FFFFFF',
     borderRadius: radius.pill,
     paddingHorizontal: spacing.md,
     paddingVertical: 8,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: glass.hairline,
   },
   url: { flex: 1 },
   webWrap: { flex: 1, backgroundColor: colors.surface },

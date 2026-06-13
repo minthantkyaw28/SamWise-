@@ -120,7 +120,7 @@ export function Island() {
 
   return (
     <Animated.View pointerEvents="box-none" style={[styles.containerExpanded, posStyle]}>
-      <Glass strong radius={radius.lg} padding={0} style={styles.panel} contentStyle={styles.panelContent}>
+      <View style={styles.panel}>
         <GestureDetector gesture={headerGesture}>
           <Animated.View style={styles.header}>
             <View style={styles.grabber} />
@@ -229,7 +229,7 @@ export function Island() {
             </Animated.View>
           )}
         </ScrollView>
-      </Glass>
+      </View>
     </Animated.View>
   );
 }
@@ -285,9 +285,11 @@ const styles = StyleSheet.create({
   panel: {
     width: PANEL_WIDTH,
     maxHeight: H * 0.74,
-  },
-  panelContent: {
-    maxHeight: H * 0.74,
+    backgroundColor: '#FBFAFE',
+    borderRadius: radius.lg,
+    overflow: 'hidden',
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: glass.border,
   },
   header: {
     paddingTop: spacing.sm,
