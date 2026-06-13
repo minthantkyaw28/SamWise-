@@ -1,39 +1,40 @@
 /**
  * Accessibility-first design tokens.
  *
- * Principles (see project brief §6):
+ * Palette: Samwise Design System v1 — a calm liquid-glass aesthetic. Cool blue
+ * primary + lilac canvas + cool near-black ink. Token names are unchanged (the
+ * components reference them by role); only the values are the v1 colours.
  *  - Large type: body >= 20, headings >= 32.
- *  - Very high contrast: near-black ink on a warm off-white.
- *  - One bold accent: deep terracotta/red.
+ *  - Very high contrast on a soft lilac canvas.
  *  - Generous spacing, large touch targets (>= 64px), slow deliberate motion.
  */
 
 export const colors = {
-  // Warm off-white background, near-black ink — high contrast, easy on the eye.
-  bg: '#FBF7F0',
-  surface: '#FFFFFF',
-  ink: '#1A1614',
-  inkSoft: '#4A4440',
+  // Lilac aurora canvas, cool near-black ink — high contrast, easy on the eye.
+  bg: '#F4EDFB', // canvas
+  surface: '#FFFFFF', // onColor / white glass
+  ink: '#181A22',
+  inkSoft: '#525868',
 
-  // Bold accent — deep terracotta.
-  accent: '#B5341B',
-  accentDark: '#8A2614',
-  accentSoft: '#F6E2DC',
+  // Brand — primary blue (primary actions, accents, active states).
+  accent: '#2C6BE0', // primary
+  accentDark: '#1E51B6', // primaryDeep (pressed / gradient end)
+  accentSoft: 'rgba(44,107,224,0.10)', // tintWash (soft-primary background)
 
-  // The floating island is near-black like a Dynamic Island.
-  island: '#141210',
-  islandInk: '#FBF7F0',
-  islandMuted: '#A8A29B',
+  // The floating island is the cool near-black, like a Dynamic Island.
+  island: '#181A22', // ink
+  islandInk: '#FFFFFF', // onColor
+  islandMuted: '#8A8F9E', // inkFaint
 
   // Status colours.
-  success: '#1F7A3D',
-  successSoft: '#E2F1E7',
-  pending: '#C9C2B8',
-  active: '#B5341B',
+  success: '#13A06A',
+  successSoft: 'rgba(19,160,106,0.12)', // successWash
+  pending: '#8A8F9E', // inkFaint
+  active: '#2C6BE0', // primary
 
   // Lines / shadows.
-  line: '#E4DCCF',
-  shadow: '#000000',
+  line: 'rgba(24,26,34,0.08)', // hairline
+  shadow: '#2A2750', // premium card-shadow tint
 } as const;
 
 export const font = {
