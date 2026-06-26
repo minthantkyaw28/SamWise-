@@ -417,3 +417,4 @@ const styles = StyleSheet.create({
   dotWrap: { width: 16, alignItems: 'center', justifyContent: 'center' },
   dot: { width: 12, height: 12, borderRadius: 6 },
 });
+// chore: note 2026-06-26T15:35:06
