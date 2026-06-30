@@ -67,3 +67,4 @@ function Piece({ index }: { index: number }) {
     />
   );
 }
+// chore: note 2026-06-30T21:18:10
