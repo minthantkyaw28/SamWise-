@@ -150,4 +150,3 @@ export function questionFor(step: AgentStep): { question: string; options: strin
   }
   return null;
 }
-// chore: note 2026-07-02T15:37:16
