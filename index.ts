@@ -6,4 +6,3 @@ import App from './App';
 // It also ensures that whether you load the app in Expo Go or in a native build,
 // the environment is set up appropriately
 registerRootComponent(App);
-// chore: note 2026-07-06T21:13:27
