@@ -67,3 +67,4 @@ IDLE → LISTENING → PLANNING → EXECUTING_STEP ⇄ AWAITING_USER → REVIEW 
 exposes a stable automation contract documented at the top of the file — never
 rename its element ids without updating `samwisePlan.ts` / `browserActions.ts`.
 ```
+<!-- chore: note 2026-07-15T11:00:16 -->
