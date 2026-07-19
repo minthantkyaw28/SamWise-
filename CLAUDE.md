@@ -39,4 +39,3 @@ over production-readiness. Don't over-engineer; no backend services.
   `react-native-worklets/plugin` is the Reanimated-4 babel plugin (in
   `babel.config.js`, must be last). `.html` is added to `assetExts` in
   `metro.config.js`.
-<!-- chore: note 2026-07-13T12:15:21 -->
