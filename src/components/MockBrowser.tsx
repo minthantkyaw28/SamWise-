@@ -136,4 +136,3 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
   },
 });
-// chore: note 2026-07-17T14:55:02
