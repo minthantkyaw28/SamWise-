@@ -7,3 +7,4 @@ module.exports = function (api) {
     plugins: ['react-native-worklets/plugin'],
   };
 };
+// chore: note 2026-07-22T11:16:12
