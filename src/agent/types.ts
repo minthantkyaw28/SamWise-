@@ -95,4 +95,3 @@ export type BridgeMessage = {
   type: 'ready' | 'stepChanged' | 'submitted' | 'error' | 'ack' | 'text';
   payload: Record<string, unknown>;
 };
-// chore: note 2026-08-07T00:48:34
