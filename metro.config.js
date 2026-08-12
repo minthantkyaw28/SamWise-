@@ -8,3 +8,4 @@ const config = getDefaultConfig(__dirname);
 config.resolver.assetExts.push('html');
 
 module.exports = config;
+// chore: note 2026-08-12T10:16:45
