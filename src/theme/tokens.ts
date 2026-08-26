@@ -91,4 +91,3 @@ export const shadowCard = {
   shadowOffset: { width: 0, height: 10 },
   elevation: 12,
 };
-// chore: note 2026-08-14T10:13:13
