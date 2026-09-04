@@ -134,4 +134,3 @@ export const useStore = create<SamwiseState>((set) => ({
 
 /** Non-React access for the orchestrator. */
 export const store = useStore;
-// chore: note 2026-09-02T17:12:45
