@@ -117,4 +117,3 @@ const styles = StyleSheet.create({
     textDecorationLine: 'line-through',
   },
 });
-// chore: note 2026-09-21T15:51:32
