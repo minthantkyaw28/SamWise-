@@ -69,4 +69,3 @@ const styles = StyleSheet.create({
     color: colors.ink,
   },
 });
-// chore: note 2026-10-08T19:19:29
