@@ -89,3 +89,4 @@ const styles = StyleSheet.create({
   hintTitle: { color: colors.islandInk, fontSize: font.bodyLarge, fontWeight: font.weightBold },
   hintText: { color: colors.islandMuted, fontSize: font.body, lineHeight: font.body * 1.4 },
 });
+// chore: note 2026-11-15T16:16:56
