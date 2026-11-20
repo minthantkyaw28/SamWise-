@@ -68,4 +68,3 @@ const styles = StyleSheet.create({
     fontSize: font.bodySmall,
   },
 });
-// chore: note 2026-11-16T22:56:50
